@@ -86,5 +86,34 @@ namespace Grocery.App.ViewModels
             }
         }
 
+        [ObservableProperty]
+        string searchText;
+
+        partial void OnSearchTextChanged(string value)
+        {
+            FilterProducts(value);
+        }
+
+        private void FilterProducts(string? query)
+        {
+            List<Product> allProducts = _productService.GetAll();
+            IEnumerable<Product> filtered;
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                // show all available products again
+                filtered = allProducts.Where(p => p.Stock > 0 && MyGroceryListItems.All(g => g.ProductId != p.Id));
+            }
+            else
+            {
+                // filter by text
+                filtered = allProducts.Where(p => p.Name.Contains(query, StringComparison.OrdinalIgnoreCase) && p.Stock > 0 && MyGroceryListItems.All(g => g.ProductId != p.Id));
+            }
+
+            AvailableProducts.Clear();
+            foreach (var p in filtered)
+                AvailableProducts.Add(p);
+        }
+
     }
 }
